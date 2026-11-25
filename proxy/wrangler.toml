@@ -1,0 +1,3 @@
+name = "mindatlas-ai-proxy"
+main = "worker.js"
+compatibility_date = "2026-11-01"
