@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.spatial.ui.foundation)
     implementation(libs.spatial.ui.design)
     testImplementation(libs.junit)
+    testImplementation(libs.org.json)
 }
 
 // Same exclusions as the official PICO samples: the Spatial UI ships its own forks of these.

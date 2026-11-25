@@ -17,6 +17,7 @@ spatial-ui-platform = { group = "com.pico.spatial.ui", name = "platform" }
 spatial-ui-foundation = { group = "com.pico.spatial.ui", name = "foundation" }
 spatial-ui-design = { group = "com.pico.spatial.ui", name = "design" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+org-json = { group = "org.json", name = "json", version = "20240303" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
