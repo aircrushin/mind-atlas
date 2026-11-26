@@ -1,6 +1,7 @@
 package com.aircrushin.mindatlas
 
 import com.aircrushin.mindatlas.ai.AiClient
+import com.aircrushin.mindatlas.ai.AiConfig
 import com.aircrushin.mindatlas.ai.LocalBrain
 import com.aircrushin.mindatlas.data.Card
 import com.aircrushin.mindatlas.data.ChatMessage
@@ -13,6 +14,7 @@ import com.aircrushin.mindatlas.data.workspaceFromJson
 import com.aircrushin.mindatlas.ui.GraphLayout
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -60,5 +62,25 @@ class CoreLogicTest {
     @Test fun parsesFencedJson() {
         val o = AiClient.parseJsonObject("```json\n{\"cards\":[{\"title\":\"t\"}]}\n```")
         assertEquals("t", o.getJSONArray("cards").getJSONObject(0).getString("title"))
+    }
+
+    @Test fun usableRequiresKeyOnDefaultOpenRouter() {
+        val noKey = AiConfig("https://openrouter.ai/api/v1", "", "deepseek/deepseek-chat-v3-0324", false)
+        assertFalse(noKey.usable)
+        val trailing = AiConfig("https://openrouter.ai/api/v1/", "  ", "m", false)
+        assertFalse(trailing.usable)
+        val withKey = AiConfig("https://openrouter.ai/api/v1", "test-key", "m", false)
+        assertTrue(withKey.usable)
+        val offline = AiConfig("https://openrouter.ai/api/v1", "test-key", "m", true)
+        assertFalse(offline.usable)
+    }
+
+    @Test fun usableAllowsKeylessCustomProxy() {
+        val proxy = AiConfig("https://mindatlas-proxy.example.com/v1", "", "local-model", false)
+        assertTrue(proxy.usable)
+        val blankUrl = AiConfig("", "", "m", false)
+        assertFalse(blankUrl.usable)
+        val offlineProxy = AiConfig("https://mindatlas-proxy.example.com/v1", "", "m", true)
+        assertFalse(offlineProxy.usable)
     }
 }

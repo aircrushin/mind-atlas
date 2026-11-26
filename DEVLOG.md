@@ -22,3 +22,13 @@
 - AI 提示词用 OpenRouter 实测：卡片提炼 ~5s、关联 ~5s，返回 JSON 结构正确。
 - 加入 JVM 单元测试 5 个（全部通过）；release APK 构建通过，确认 APK 内不含任何 API Key。
 - 新增 `proxy/worker.js`：可选的服务端代理，Key 不进 APK。
+### 2026-11-26（北京时间）
+- 在用户 Windows 电脑（DESKTOP-7RD0D2K）上把工具链装到 `D:\pico-spatial`：`@picoxr/pico-cli@0.7.0`（npm 前缀在 D:，约 29 分钟），`PICO_HOME=D:\pico-spatial\pico-home`，`C:\Users\Admin\.pico` 与 `picoAvdConfig` 做目录联接到 D:。
+- 官方 PICO Emulator **6.2.1**（PICO OS 6 / swan / `picosdk_spaceos_x86_64-user`）安装并启动 AVD `Pico_Emulator_6_2`，adb `emulator-5554`。未使用自带的 Google Android Emulator。未装 Android Studio，未跑 `pico-cli setup --agent-tool`。
+- 安装并启动 `MindAtlas-0.1.0-nokey.apk`（`com.aircrushin.mindatlas/.LaunchActivity`）。用 `pico-cli interact` 点开笔记、AI 助手、知识星图、设置，并用离线整理生成 1 张「遗忘·卡片」，六种空间窗口都有 2560×1440 截图，见 `/workspace/pico-spatial/screenshots/`（推荐投稿图 `05-spatial-2560x1440.png`）。
+- 稳定性：2026-11-26 01:13:18–01:43:18（Asia/Shanghai）应用进程一直是 pid 5589，模拟器进程 69132 未退出，crash buffer 为空。详细命令与问题见 `/workspace/pico-spatial/windows-test-report.md`。
+
+- Phase 2（同日稍后）：修正未配置 API Key 时状态栏仍显示「AI 在线 · deepseek/…」的问题。`AiConfig.usable` 现在只有在未开「仅离线」、Base URL 非空，并且（已填 Key，或 Base URL 指向非 OpenRouter 的代理）时为真；默认 OpenRouter 且 Key 为空时状态栏显示「AI 未配置（本地整理）」。空知识星图不再是几乎透明的方洞，增加体积背板、前景边框、可随视角旋转的占位星点，以及高对比说明卡片；有卡片后的星图绘制路径未改。
+- 投稿素材写入 `submission-assets/`：图标 1024×1024 JPG、海报 2560×1440 / 1024×1024 JPG、详情图 2560×1440 JPG（由官方模拟器推荐截图转码）。图标与海报基于已有星图标识和应用名「空间研读台 MindAtlas」，未写入密钥或个人隐私。
+- 版本升至 0.1.1（versionCode 2），在无 `AI_API_KEY` / `LLM_API_KEY` / `secrets.properties` 的环境中重建 release APK：`/workspace/pico-spatial/apk-releases/MindAtlas-0.1.1-nokey.apk`。已扫描包内无 Key 字符串。JVM 单元测试 7 个全部通过（含 `usable` 用例）。
+- GitHub 仓库已公开：https://github.com/aircrushin/mind-atlas 。本轮未在官方模拟器上复测 0.1.1 的两处 UI 修改，也未向官方参赛网站提交作品。

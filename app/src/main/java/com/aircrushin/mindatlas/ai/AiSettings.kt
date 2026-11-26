@@ -12,7 +12,31 @@ import kotlinx.coroutines.flow.StateFlow
  * build-time defaults from secrets.properties; nothing secret is committed to git.
  */
 data class AiConfig(val baseUrl: String, val apiKey: String, val model: String, val offlineOnly: Boolean) {
-    val usable: Boolean get() = !offlineOnly && baseUrl.isNotBlank()
+    /**
+     * True only when an online chat request can actually be sent. A blank key is allowed
+     * solely for a self-hosted / third-party proxy; the default OpenRouter endpoint needs a key.
+     */
+    val usable: Boolean
+        get() = !offlineOnly && baseUrl.isNotBlank() && (apiKey.isNotBlank() || isKeylessProxy(baseUrl))
+
+    companion object {
+        const val DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
+
+        /** Keyless configs are only usable when the host is not the default OpenRouter API. */
+        fun isKeylessProxy(baseUrl: String): Boolean {
+            val host = try {
+                val raw = baseUrl.trim()
+                if (raw.isEmpty()) return false
+                val withScheme = if (raw.contains("://")) raw else "https://$raw"
+                java.net.URI(withScheme).host ?: return false
+            } catch (_: Exception) {
+                return false
+            }
+            return host.isNotBlank() &&
+                !host.equals("openrouter.ai", ignoreCase = true) &&
+                !host.equals("www.openrouter.ai", ignoreCase = true)
+        }
+    }
 }
 
 object AiSettings {

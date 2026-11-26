@@ -23,8 +23,8 @@ android {
         applicationId = "com.aircrushin.mindatlas"
         minSdk = 35
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.1.1"
         buildConfigField("String", "AI_BASE_URL", "\"${secret("AI_BASE_URL", "https://openrouter.ai/api/v1")}\"")
         buildConfigField("String", "AI_API_KEY", "\"${secret("AI_API_KEY")}\"")
         buildConfigField("String", "AI_MODEL", "\"${secret("AI_MODEL", "deepseek/deepseek-chat-v3-0324")}\"")

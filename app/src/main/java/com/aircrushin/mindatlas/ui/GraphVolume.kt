@@ -102,13 +102,11 @@ fun GraphVolume(modifier: Modifier) {
         }
     ) {
         if (s.cards.isEmpty()) {
-            Column(
-                Modifier.align(Alignment.Center).clip(RoundedCornerShape(24.dp)).background(Color.Black.copy(alpha = 0.35f)).padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text("✨ 知识星图", style = PicoTheme.typography.titleLarge)
-                Text("在阅读窗口选择段落，点“生成知识卡片”，卡片会作为星星出现在这里。", color = PicoTheme.colorScheme.labelSecondary)
-            }
+            EmptyGraphPlaceholder(
+                modifier = Modifier.fillMaxSize(),
+                project = { project(it) },
+                halfD = halfD,
+            )
         }
 
         // Edges: dotted lines with per-dot depth.
@@ -188,6 +186,103 @@ fun GraphVolume(modifier: Modifier) {
             ToolbarAction("↺ 重置视角") { yaw = 20f; pitch = -12f; Workspace.focusCard(null) }
             ToolbarAction(if (busy != null) "AI 处理中…" else "✦ AI 重新关联") { if (busy == null) Actions.relinkAll() }
             ToolbarAction("${s.cards.size} 卡片 · ${s.links.size} 关联") {}
+        }
+    }
+}
+
+
+/** Visible empty state for the volumetric graph: a framed volume, placeholder stars, and a hint card. */
+@Composable
+private fun EmptyGraphPlaceholder(
+    modifier: Modifier,
+    project: (P3) -> Triple<Float, Float, Float>,
+    halfD: Float,
+) {
+    val density = LocalDensity.current
+    // Fixed decorative constellation — rotates with the camera so the empty volume still feels 3D.
+    val stars = remember {
+        listOf(
+            P3(-0.62f, -0.28f, -0.45f) to Palette[0],
+            P3(-0.18f, 0.42f, -0.15f) to Palette[1],
+            P3(0.55f, -0.36f, 0.22f) to Palette[2],
+            P3(0.28f, 0.30f, 0.48f) to Palette[3],
+            P3(-0.48f, 0.08f, 0.38f) to Palette[4],
+            P3(0.08f, -0.48f, -0.32f) to Palette[5],
+            P3(0.42f, 0.08f, -0.55f) to Palette[6],
+        )
+    }
+    val starLinks = remember { listOf(0 to 1, 1 to 4, 4 to 0, 2 to 3, 3 to 6, 5 to 2, 1 to 3) }
+
+    Box(modifier) {
+        // Back plane so the volume is a visible room, not a transparent hole.
+        Box(
+            Modifier.align(Alignment.Center)
+                .size(width = 900.dp, height = 620.dp)
+                .zOffset { -halfD * 0.88f }
+                .clip(RoundedCornerShape(32.dp))
+                .background(Color(0xFF0E1428).copy(alpha = 0.78f))
+                .border(1.5.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(32.dp)),
+        )
+        // Front frame, marking the near face of the volume.
+        Box(
+            Modifier.align(Alignment.Center)
+                .fillMaxSize()
+                .padding(20.dp)
+                .zOffset { halfD * 0.08f }
+                .border(2.dp, Color.White.copy(alpha = 0.32f), RoundedCornerShape(28.dp)),
+        )
+
+        starLinks.forEach { (ia, ib) ->
+            val a = stars[ia].first
+            val b = stars[ib].first
+            for (i in 1 until 6) {
+                val t = i / 6f
+                val (x, y, z) = project(a + (b - a) * t)
+                val sz = 5
+                val half = with(density) { sz.dp.toPx() } / 2f
+                Box(
+                    Modifier.offset { IntOffset((x - half).roundToInt(), (y - half).roundToInt()) }
+                        .zOffset { z }
+                        .size(sz.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.42f)),
+                )
+            }
+        }
+        stars.forEach { (p, color) ->
+            val (x, y, z) = project(p)
+            val sz = 16
+            val half = with(density) { sz.dp.toPx() } / 2f
+            Box(
+                Modifier.offset { IntOffset((x - half).roundToInt(), (y - half).roundToInt()) }
+                    .zOffset { z }
+                    .size(sz.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.85f))
+                    .border(1.dp, Color.White.copy(alpha = 0.55f), CircleShape),
+            )
+        }
+
+        Column(
+            Modifier.align(Alignment.Center)
+                .zOffset { halfD * 0.18f }
+                .widthIn(max = 560.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color(0xFF141A2E).copy(alpha = 0.94f))
+                .border(1.5.dp, Color(0xFF5B8CFF).copy(alpha = 0.65f), RoundedCornerShape(24.dp))
+                .padding(horizontal = 36.dp, vertical = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("✨ 知识星图", style = PicoTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("还没有卡片", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFD5DEF5))
+            Text(
+                "在阅读窗口选择段落，点“生成知识卡片”，卡片会作为星星出现在这里。",
+                fontSize = 15.sp,
+                lineHeight = 24.sp,
+                color = Color(0xFFB4C0DC),
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

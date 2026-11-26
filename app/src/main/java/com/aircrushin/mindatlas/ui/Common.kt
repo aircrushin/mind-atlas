@@ -71,10 +71,18 @@ fun StatusLine(modifier: Modifier = Modifier) {
     val busy by Actions.busy.collectAsState()
     val last by Actions.lastMessage.collectAsState()
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Dot(if (busy != null) Color(0xFFFFC94D) else if (cfg.usable) Color(0xFF3CCB9A) else Color(0xFF9E9E9E))
+        val online = cfg.usable
+        val statusText = when {
+            busy != null -> busy!!
+            last != null -> last!!
+            online -> "AI 在线 · ${cfg.model}"
+            cfg.offlineOnly -> "离线模式（本地整理）"
+            else -> "AI 未配置（本地整理）"
+        }
+        Dot(if (busy != null) Color(0xFFFFC94D) else if (online) Color(0xFF3CCB9A) else Color(0xFF9E9E9E))
         Spacer(Modifier.width(8.dp))
         Text(
-            busy ?: last ?: if (cfg.usable) "AI 在线 · ${cfg.model}" else "离线模式（本地整理）",
+            statusText,
             style = PicoTheme.typography.bodySmall,
             color = PicoTheme.colorScheme.labelSecondary,
             maxLines = 1,
